@@ -1,0 +1,22 @@
+{
+  "name": "startgg-oauth-gate",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Oauth",
+    "start.gg"
+  ],
+  "author": "TwilCynder",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@twilcynder/commandline": "^1.4.0",
+    "express": "^5.2.1",
+    "startgg-oauth-helper": "^1.0.0",
+    "ws": "^8.21.3"
+  },
+  "type": "module"
+}
