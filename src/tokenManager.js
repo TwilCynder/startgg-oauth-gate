@@ -1,4 +1,5 @@
 import { makeStandardStartggData } from "startgg-oauth-helper";
+import { broadcast } from "./wsUtil.js";
 
 export class TokenManager {
     /**@type {ReturnType<makeStandardStartggData>} */
@@ -12,6 +13,7 @@ export class TokenManager {
 
     set(sggData, isNew){
         this.#startggData = makeStandardStartggData(sggData);
+        broadcast(this.#wss, this.getStatus());
     }
 
     get(){
