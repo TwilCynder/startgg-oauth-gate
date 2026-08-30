@@ -15,7 +15,7 @@
   "dependencies": {
     "@twilcynder/commandline": "^1.4.0",
     "express": "^5.2.1",
-    "startgg-oauth-helper": "^1.0.0",
+    "startgg-oauth-helper": "^1.2.0",
     "ws": "^8.21.3"
   },
   "type": "module"

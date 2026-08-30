@@ -4,6 +4,8 @@ import { createServer } from "http"
 
 import cl from "@twilcynder/commandline";
 import { WebSocketServer } from "ws";
+import { initOauth } from "./src/oauth.js";
+import { TokenManager } from "./src/tokenManager.js";
 
 let config = {
     port: 8099,
@@ -23,13 +25,19 @@ for (let i = 2; i < process.argv; i++){
 config.port = process.env.PORT ?? config.port;
 
 const app = express();
-app.use(express.static("./site"));
-
 const server = createServer(app);
 const wss = new WebSocketServer({server, clientTracking: true});
 
+app.use(express.static("./site"));
+
+const tokenManager = new TokenManager(wss);
+
+initOauth(app, tokenManager);
+
 wss.on("connection", ws => {
     console.log("Connected");
+
+    ws.send(JSON.stringify(tokenManager.getStatus()));
 })
 
 cl.commands = {
