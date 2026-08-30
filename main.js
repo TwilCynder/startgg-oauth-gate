@@ -38,6 +38,14 @@ wss.on("connection", ws => {
     console.log("Connected");
 
     ws.send(JSON.stringify(tokenManager.getStatus()));
+    ws.onmessage = (event => {
+        console.log("Message :", event);
+        if (event.data && event.data == "logout"){
+            console.log("LOGOUT")
+            tokenManager.logOut();
+            tokenManager.broadcastStatus();
+        }
+    })
 })
 
 cl.commands = {

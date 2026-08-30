@@ -6,16 +6,30 @@
                 font-size: 25px;
             }
 
+            .buttons-container {
+                display: flex;
+                flex-direction: row;
+                gap: 20px
+            }
+
             .button {
                 font-size: 40px;
                 display: block;
                 padding: 15px;
                 background-color: lightblue;
                 border-radius: 10px;
+                border: none;
                 text-decoration: none;
                 box-sizing: border-box;
                 height: auto;
                 width: fit-content;
+                color: black;
+            }
+
+            #logout {
+                background-color: lightcoral;
+                display: none;
+                cursor: pointer;
             }
 
             .green {
@@ -28,10 +42,14 @@
         </style>
     </head>
     <body>
-        <a class = "button" href="/auth">Authenticate</a>
+        <div class = "buttons-container">
+            <a class = "button" href="/auth">Authenticate</a>
+            <input type="button" class = "button" id="logout" onclick="logoutButtonOnclick()" value="Log Out">
+        </div>
+
         <br>
         Status : <br>
-        <div class = "status">(connecting ...)</div>
+        <div id = "status">(connecting ...)</div>
         <script src="index.js" type="module"></script>
     </body>
 </html>

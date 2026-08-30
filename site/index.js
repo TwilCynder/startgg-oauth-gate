@@ -3,11 +3,12 @@ import { black, green, red } from "./frontUtil.js";
 const url = "ws://" + window.location.host;
 const ws = new WebSocket(url);
 
-const statusDiv = document.querySelector(".status")
-
+const statusDiv = document.getElementById("status")
+const logOutButton = document.getElementById("logout")
 function setStatus(colorF, text){
     colorF(statusDiv);
     statusDiv.innerHTML = text;
+    logOutButton.style.display = colorF == green ? "block" : "none"
 }
 
 function error(...err){
@@ -22,6 +23,11 @@ function setStatusNoAuth(){
 function setStatusAuth(){
     setStatus(green, "Authenticated !")
 }
+
+function logoutButtonOnclick(){
+    ws.send("logout");
+}
+window.logoutButtonOnclick = logoutButtonOnclick;
 
 //---- Websocket ----
 

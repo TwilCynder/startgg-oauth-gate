@@ -13,11 +13,15 @@ export class TokenManager {
 
     set(sggData, isNew){
         this.#startggData = makeStandardStartggData(sggData);
-        broadcast(this.#wss, this.getStatus());
+        this.broadcastStatus();
     }
 
     get(){
         return this.#startggData;
+    }
+
+    broadcastStatus(){
+        broadcast(this.#wss, this.getStatus());
     }
 
     getStatus(){
@@ -32,5 +36,6 @@ export class TokenManager {
 
     logOut(){
         this.#startggData = null;
+        this.broadcastStatus();
     }
 }
