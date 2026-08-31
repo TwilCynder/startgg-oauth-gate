@@ -22,6 +22,7 @@ export async function initOauth(app, tokenManager){
         token: "/token"   
     }, {
         responseHandlerCallback: (_, data, isNew) => tokenManager.set(data, isNew),
-        startggDataGetter: (_) => tokenManager.get()
+        startggDataGetter: (_) => tokenManager.get(),
+        cors: "*"
     })
 }
