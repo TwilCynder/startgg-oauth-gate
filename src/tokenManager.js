@@ -1,41 +1,28 @@
 import { makeStandardStartggData } from "startgg-oauth-helper";
-import { broadcast } from "./wsUtil.js";
+import {EventEmitter} from "events"
 
-export class TokenManager {
+export class TokenManager extends EventEmitter {
     /**@type {ReturnType<makeStandardStartggData>} */
     #startggData;
-    #wss;
 
     /** @param {import("ws").WebSocketServer} wss */
-    constructor(wss){
-        this.#wss = wss;
+    constructor(){
+        super();
     }
-
-    set(sggData, isNew){
-        this.#startggData = makeStandardStartggData(sggData);
-        this.broadcastStatus();
-    }
-
+ 
     get(){
         return this.#startggData;
     }
 
-    broadcastStatus(){
-        broadcast(this.#wss, this.getStatus());
-    }
-
-    getStatus(){
-        const data = this.get();
-        return data ? {
-            authenticated: true,
-            expiration_date: data.expiration_date
-        } : {
-            authenticated: false
-        }
+    set(sggData, isNew){
+        const data = makeStandardStartggData(sggData);
+        this.#startggData = data;
+        this.emit("change", data);
     }
 
     logOut(){
         this.#startggData = null;
-        this.broadcastStatus();
+        this.emit("change", null);
     }
+
 }

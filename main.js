@@ -6,9 +6,10 @@ import cl from "@twilcynder/commandline";
 import { WebSocketServer } from "ws";
 import { initOauth } from "./src/oauth.js";
 import { TokenManager } from "./src/tokenManager.js";
+import { broadcast, getStatus } from "./src/wsUtil.js";
 
 let config = {
-    port: 8099,
+    port: 54301,
 }
 
 for (let i = 2; i < process.argv; i++){
@@ -30,23 +31,26 @@ const wss = new WebSocketServer({server, clientTracking: true});
 
 app.use(express.static("./site"));
 
-const tokenManager = new TokenManager(wss);
+const tokenManager = new TokenManager();
 
-initOauth(app, tokenManager);
+tokenManager.on("change", (data) => {
+    const status = getStatus(data);
+
+    broadcast(wss, status);
+})
 
 wss.on("connection", ws => {
     console.log("Connected");
 
-    ws.send(JSON.stringify(tokenManager.getStatus()));
+    ws.send(JSON.stringify(getStatus(tokenManager.get())));
     ws.onmessage = (event => {
-        console.log("Message :", event);
         if (event.data && event.data == "logout"){
-            console.log("LOGOUT")
             tokenManager.logOut();
-            tokenManager.broadcastStatus();
         }
     })
-})
+});
+
+initOauth(app, tokenManager);
 
 cl.commands = {
     send: (words) => {
