@@ -1,4 +1,4 @@
-import { initStartggOauth } from "startgg-oauth-helper";
+import { initStartggOauth, makeStandardStartggData } from "startgg-oauth-helper";
 import { TokenManager } from "./tokenManager.js";
 
 const SCOPES = "user.identity";
@@ -21,7 +21,7 @@ export async function initOauth(app, tokenManager){
         callback: "/callback",
         token: "/token"   
     }, {
-        responseHandlerCallback: (_, data, isNew) => tokenManager.set(data, isNew),
+        responseHandlerCallback: (_, data, _isNew) => tokenManager.set(makeStandardStartggData(data)),
         startggDataGetter: (_) => tokenManager.get(),
         cors: "*"
     })

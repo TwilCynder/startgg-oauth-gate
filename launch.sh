@@ -1,2 +1,2 @@
 #! /usr/bin/env bash
-node --env-file=.env main.js
+node --env-file=.env main.js $@

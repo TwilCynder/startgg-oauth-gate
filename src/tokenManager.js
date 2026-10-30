@@ -14,15 +14,13 @@ export class TokenManager extends EventEmitter {
         return this.#startggData;
     }
 
-    set(sggData, isNew){
-        const data = makeStandardStartggData(sggData);
+    set(data){
         this.#startggData = data;
         this.emit("change", data);
     }
 
     logOut(){
-        this.#startggData = null;
-        this.emit("change", null);
+        this.set(null);
     }
 
 }
