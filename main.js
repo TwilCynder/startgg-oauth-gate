@@ -9,28 +9,29 @@ import { broadcast, getStatus } from "./src/wsUtil.js";
 import { getPositionalArg } from "./src/paramsHelper.js";
 import { initSave } from "./src/save.js";
 import { errorExit } from "./src/util.js";
+import { ArgumentsManager } from "@twilcynder/arguments-parser";
 
 let config = {
     port: 54301,
+    hostname: "127.0.0.1",
     save: null
 }
 
-for (let i = 2; i < process.argv.length; i++){
-    let arg = process.argv[i];
-    if (arg == "-p" || arg == "--port"){
-        i++;
-        config.port = parseInt(getPositionalArg(process.argv, i, arg));
-    } else if (arg == "--save"){
-        config.save = true;
-    } else if (arg == "--save-at"){
-        i++;
-        config.save = getPositionalArg(process.argv, i, arg);
-    } else {
-        errorExit(1, "Unrecognized argument :", arg);
-    }
-}
+let args = new ArgumentsManager()
+    .setParameters({guessLowDashes: true, allowUnknownArguments: false, onError: {errorCode: 1, log: true, throw: false}})
+    .addOption(["-p", "--port"], {description: "Port the webserver will listen to", type: "number"}, true)
+    .addOption(["-H", "--hostname"], {description: "Hostname the server will be reachable at"}, true)
+    .addSwitch(["-s", "--save"], {description: "Save the token to ~/.goomba-sgg-tools/sgg-oauth-data.json to persist it when SGGOG stops"})
+    .addOption(["-S", "--save-at"], {description: "Save the token to the specified path to persist it when SGGOG stops"})
+    .enableHelpParameter()
+    .parseProcessArguments();
+
+config.port = args.port ?? config.port;
+config.hostname = args.hostname ?? config.hostname;
+config.save = args.save_at ?? args.save ?? config.save;
 
 config.port = process.env.PORT ?? config.port;
+config.hostname = process.env.HOSTNAME ?? config.port;
 
 const app = express();
 const server = createServer(app);
@@ -88,7 +89,7 @@ cl.commands = {
     }
 }
 
-server.listen(config.port);
+server.listen(config.port, config.hostname);
 console.log("Server listening on port " + config.port);
 
 cl.enableExit();
