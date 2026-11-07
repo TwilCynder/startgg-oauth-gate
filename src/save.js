@@ -12,7 +12,11 @@ class DaveManager {
     }
 
     save(data){
-        fs.writeFile(this.#path, JSON.stringify(data));
+        return fs.writeFile(this.#path, JSON.stringify(data));
+    }
+
+    delete(){
+        return fs.rm(this.#path);
     }
 }
 
@@ -40,12 +44,12 @@ export async function initSave(path){
             if (!text) return;
             return JSON.parse(text);
         })
-        .catch(err => {
+        .catch(async err => {
             if (err && err.code == "ENOENT"){
                 return false;
             }
+            throw ("Could not open open save file :" + err)
         })
-    
 
     return [data, new DaveManager(path)];
 }

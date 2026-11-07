@@ -6,7 +6,7 @@ SGGOG implements the start.gg OAuth process in a local server, serving a web pag
 This means that programs that cannot use OAuth (i.e. non-web apps like CLI apps) can authenticate with the API with an OAuth-obtained token, as long as anyone logged into their start.gg account through SGGOG (which means the aforementioned program will be authenticated as that user !)
 
 Note that running the OAuth process requires a registered start.gg OAuth app, which can be created in your developper settings on start.gg.  
-The callback URI needs to use the exact one that your local SGGOG instance will be accessed at (e.g. `127.0.0.1:54301/callback` if you use the default port + want to access it as localhost)
+The callback URI needs to use the exact one that your local SGGOG instance will be accessed at (e.g. `127.0.0.1:54301/callback` if you use the default port + want to access it from the local machine)
 
 (if you're lost and haven't learned in-depth about OAuth yet, I recommend getting a good understanding of it first because SGGOG uses it in an unusual way)
 
@@ -20,16 +20,16 @@ The callback URI needs to use the exact one that your local SGGOG instance will 
     - `SGG_OAUTH_CLIENT_ID` : client ID of your OAuth app, as provided by its page in your start.gg dev settings
     - `SGG_OAUTH_REDIRECT_URI` : redirect URI that you specified on the same page
     - `SGG_OAUTH_CLIENT_SECRET` : client secret found on the same page   
-  - If you are not using the default port or IP/hostname (127.0.0.1:54301), they must be provided through the `PORT` and `HOSTNAME` environment variables, or the `-p/--port` and `-H/--hostname`. *They need to be the same as the ones you used in the OAuth App's Redirect URI*.
+  - If you are not using the default port or IP/host (127.0.0.1:54301), they must be provided through the `PORT` and `HOST` environment variables, or the `-p/--port` and `-H/--host`. *They need to be the same as the ones you used in the OAuth App's Redirect URI*.
   - Use the `-s` CLI flag to persist the token, so you don't have do login again if SGGOG is closed. 
 - **Use** : Open `http://127.0.0.1:54301` in a web browser and click the Login button ; complete start.gg's Login + Authorization flow.  
 Once this is done, requests to `http://127.0.0.1:54301/token` will return an API token, usable by any external program.
 
 ## More details
-One thing to keep in mind when registering the OAuth App and its Redirect URI is that because of how OAuth works, SGGOG will only work if queried using the exact hostname you registered, so if you run it on a machine that has the local IP `192.168.1.12`, register that IP in you OAuth app, and try to access it from the same machine as `127.0.0.1` or `localhost`, *it will not work* despite your HTTP queries correctly reaching the server - conversely, if you register `127.0.0.1`, you won't be able to access SGGOG from any other machine. For this reason, it is pointless to use `0.0.0.0` as the hostname to listen to all IPs. Also, you cannot use `localhost` instead of 127.0.0.1.  
+One thing to keep in mind when registering the OAuth App and its Redirect URI is that because of how OAuth works, SGGOG will only work if queried using the exact hostname you registered, so if you run it on a machine that has the local IP `192.168.1.12`, register that IP in you OAuth app, and try to access it from the same machine as `127.0.0.1` or `localhost`, *it will not work* despite your HTTP queries correctly reaching the server - conversely, if you register `127.0.0.1`, you won't be able to access SGGOG from any other machine. For this reason, it is pointless to use `0.0.0.0` as the host to listen to all IPs. Also, you cannot use `localhost` instead of 127.0.0.1.  
 This all might sound pretty impractical, but OAuth was never made for services running on a local server, so that's the best we can do. 
 In any case, keep in mind that : 
-- The web server will listen to the port and IP you specify with the `PORT` and `HOSTNAME` environment variables, or the `-p/--port` and `-H/--hostname`
+- The web server will listen to the port and IP you specify with the `PORT` and `HOST` environment variables, or the `-p/--port` and `-H/--host`
 - They must be the same as in the Redirect URI
 
 SGGOG can then be ran either via `node main.js` or `./launch.sh` (both from the directory's root), the only difference being that `./launch.sh` [loads environment variables from `./.env`](https://nodejs.org/api/environment_variables.html#env-files) if it exists.  
@@ -49,6 +49,7 @@ This will save your token in clear in your filesystem, which might seem unsafe, 
 The HTTP response for `/token` token queries can be as follow : 
 - Status **200** : A token is returned as the response body (token only, without the "Bearer" part)
 - Status **401** (Error) : No token saved, the start.gg OAuth authorization hasn't been completed yet
+- Status **500** (Error) : Internal error
 
 Note that these queries (like most of the OAuth logic) are handled by startgg-oauth-helper, and as such it should work in the same way as any server using that library
 
@@ -58,6 +59,6 @@ Detailed list of the CLI interface and possible environment variables ; all of t
 Effect | Env variable | CLI Argument
 -|-|-
 OAuth parameters | SGG_OAUTH_CLIENT_ID <br> SGG_OAUTH_REDIRECT_URI <br> SGG_OAUTH_CLIENT_SECRET | -
-Hostname | HOSTNAME | -H / --hostname
+Host | HOST | -H / --host
 Port | PORT | -p / --port 
 Save token to file | - | -s / -S

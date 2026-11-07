@@ -1,22 +1,20 @@
-import { initStartggOauth, makeStandardStartggData } from "startgg-oauth-helper";
-import { TokenManager } from "./tokenManager.js";
+import { initStartggOauth, makeStandardStartggData, refreshToken } from "startgg-oauth-helper";
 
-const SCOPES = "user.identity";
-
-/** @param {string[]} names */
-function checkEnvironmentVariables(...names){
-    for (const name of names){
-        if (!process.env[name]){
-            throw `Missing Oauth environement variable ${name}`
-        }
+/** @typedef {{client_id: string, client_secret: string, redirect_uri: string, scopes: string}} OAuthConfig */
+/** @param {string} refresh_token @param {OAuthConfig} oauthConfig  */
+export async function refreshToken_(refresh_token, oauthConfig){
+    const res = await refreshToken(refresh_token, oauthConfig.client_id, oauthConfig.client_secret, oauthConfig.redirect_uri, oauthConfig.scopes);
+    if (!res.ok){
+        const resBody = await res.json().catch(() => null);
+        throw new Error("Couldn't refresh token : Api responded with status " + res.status + (resBody ? " : " + (resBody.error_description ?? resBody.error) : ""))
     }
+    const resBody = await res.json();
+    return makeStandardStartggData(resBody);
 }
 
-/** @param {Express} app @param {TokenManager} tokenManager  */
-export async function initOauth(app, tokenManager){
-    checkEnvironmentVariables("SGG_OAUTH_CLIENT_ID", "SGG_OAUTH_REDIRECT_URI", "SGG_OAUTH_CLIENT_SECRET");
-
-    initStartggOauth(app, process.env.SGG_OAUTH_CLIENT_ID, process.env.SGG_OAUTH_CLIENT_SECRET, process.env.SGG_OAUTH_REDIRECT_URI, SCOPES, {
+/** @param {Express} app @param {import("./tokenManager").TokenManager} tokenManager @param {OAuthConfig} oauthConfig */
+export async function initOauth(app, tokenManager, oauthConfig){
+    initStartggOauth(app, oauthConfig.client_id, oauthConfig.client_secret, oauthConfig.redirect_uri, oauthConfig.scopes, {
         authRedirect: "/auth",
         callback: "/callback",
         token: "/token"   
