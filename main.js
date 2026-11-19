@@ -89,10 +89,16 @@ tokenManager.on("change", (data) => {
     const status = getStatus(data);
 
     broadcast(wss, status);
+
+    if (data){
+        console.log("New token obtained !");
+    } else {
+        console.log("Token removed");
+    }
 })
 
 wss.on("connection", ws => {
-    console.log("Connected");
+    console.log("Web UI connected");
 
     ws.send(JSON.stringify(getStatus(tokenManager.get())));
     ws.onmessage = (event => {
@@ -106,16 +112,8 @@ initOauth(app, tokenManager, oauthConfig);
 
 app.use(express.static("./site"));
 
-cl.commands = {
-    send: (words) => {
-        for (const ws of wss.clients){
-            ws.send(words.join(" "));
-        }
-    }
-}
-
 server.listen(config.port, config.host);
-console.log("Server listening on port", config.port, "for hostname", config.host);
+console.log("Server listening on port", config.port, "for hostname", config.host, `(web page should be at http://${config.host}:${config.port}/)`);
 
 cl.enableExit();
 cl.enableList();
