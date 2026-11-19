@@ -20,8 +20,8 @@ function setStatusNoAuth(){
     setStatus(red, "Not authenticated")
 }
 
-function setStatusAuth(){
-    setStatus(green, "Authenticated !")
+function setStatusAuth(username){
+    setStatus(green, username ? "Authenticated as user " + username + " !": "Authenticated !")
 }
 
 function logoutButtonOnclick(){
@@ -37,7 +37,7 @@ ws.onmessage = event => {
     }
     const data = JSON.parse(event.data);
     if (data.authenticated){
-        setStatusAuth();
+        setStatusAuth(data.username);
     } else {
         setStatusNoAuth();
     }

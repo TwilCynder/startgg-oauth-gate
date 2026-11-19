@@ -1,7 +1,9 @@
+/** @param {ReturnType<import("./tokenManager").TokenManager['get']>} data */
 export function getStatus(data){
-    return data ? {
+    return data.token ? {
         authenticated: true,
-        expiration_date: data.expiration_date
+        expiration_date: data.token.expiration_date,
+        username: data.username
     } : {
         authenticated: false
     };

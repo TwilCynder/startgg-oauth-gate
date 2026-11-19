@@ -19,8 +19,8 @@ export async function initOauth(app, tokenManager, oauthConfig){
         callback: "/callback",
         token: "/token"   
     }, {
-        responseHandlerCallback: (_, data, _isNew) => tokenManager.set(makeStandardStartggData(data)),
-        startggDataGetter: (_) => tokenManager.get(),
+        responseHandlerCallback: (_, data, isNew) => tokenManager.setTokenData(makeStandardStartggData(data), isNew),
+        startggDataGetter: (_) => tokenManager.getToken(),
         cors: "*"
     })
 }

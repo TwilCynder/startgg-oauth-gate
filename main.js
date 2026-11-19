@@ -22,6 +22,7 @@ let args = new ArgumentsManager()
     .addOption(["-H", "--host"], {description: "Hostname the server will be reachable at"}, true)
     .addSwitch(["-s", "--save"], {description: "Save the token to ~/.goomba-sgg-tools/sgg-oauth-data.json to persist it when SGGOG stops"})
     .addOption(["-S", "--save-at"], {description: "Save the token to the specified path to persist it when SGGOG stops"})
+    .addSwitch(["-n", "--name"], {description: "Fetch the authenticated user's name to display it on the UI page. /!\ Will send requests which count towards the rate limit !"})
     .enableHelpParameter()
     .parseProcessArguments();
 
@@ -44,7 +45,7 @@ const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({server, clientTracking: true});
 
-const tokenManager = new TokenManager();
+const tokenManager = new TokenManager({getUsername: args.name});
 
 if (config.save){
     try {
@@ -55,30 +56,34 @@ if (config.save){
         if (data === false){
             data = null;
             console.log("File doesn't exist yet");
-        } else {
+        } else if (data) {
             console.log("Loaded data from save file");
-            if (data){
-                if (Date.now() > data.expiration_date){
+            if (data && data.token){
+                const tokenData = data.token;
+                if (Date.now() > tokenData.expiration_date){
                     console.log("-> Token was expired, refreshing")
-                    data = await refreshToken_(data.refresh_token, oauthConfig).catch(err => {
+                    tokenData = await refreshToken_(data.refresh_token, oauthConfig).catch(err => {
                         console.warn("-> /!\\ An error occured while trying to refresh a token using existing data - if this seems to be because the data is corrupt, you can delete it using the 'deleteFile' command");
                         throw err;
                     });
+                    data.token = tokenData;
                     await saveManager.save(data);
                 }
             } else {
                 console.log("-> Data was null")
             }
         }
-        if (data) tokenManager.set(data ?? null);
-        
+        if (data) tokenManager.set(data ?? undefined);
+
         tokenManager.on("change", async (data) => {
             try {
                 await saveManager.save(data);
             } catch (err) {
                 console.error("Couldn't save new data :", err);
             }
-        })
+        });
+
+        if (data.token && !data.username) tokenManager.updateUsername(data.token);
 
     } catch (err){
         console.error("Error - cannot enable saving :", err);
@@ -87,19 +92,11 @@ if (config.save){
 
 tokenManager.on("change", (data) => {
     const status = getStatus(data);
-
     broadcast(wss, status);
-
-    if (data){
-        console.log("New token obtained !");
-    } else {
-        console.log("Token removed");
-    }
-})
+});
 
 wss.on("connection", ws => {
     console.log("Web UI connected");
-
     ws.send(JSON.stringify(getStatus(tokenManager.get())));
     ws.onmessage = (event => {
         if (event.data && event.data == "logout"){
